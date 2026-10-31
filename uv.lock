@@ -1151,6 +1151,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
+    { name = "databricks-sdk" },
     { name = "psycopg", extra = ["binary"] },
     { name = "python-dotenv" },
 ]
@@ -1166,6 +1167,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.43.123" },
+    { name = "databricks-sdk", specifier = ">=0.117.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.6" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
 ]
