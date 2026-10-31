@@ -21,6 +21,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "dbt-databricks>=1.13.0",
     "jupyterlab>=4.6.5",
     "pytest>=9.2.0",
     "ruff>=0.17.3",
