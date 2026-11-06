@@ -1,0 +1,20 @@
+Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Plan;Option;Net Asset Value;Date
+
+Open Ended Schemes(Children’s Fund - Childrens' Fund)
+
+Axis Mutual Fund
+
+135762;INF846K01WO1;-;Axis Children's Fund;Direct Plan;Growth Option;29.1949;30-Oct-2026
+135765;INF846K01WP8;-;Axis Children's Fund;Direct Plan;IDCW Option;26.8938;30-Oct-2026
+
+Open Ended Schemes(Debt Scheme - Liquid Fund)
+
+ASK MUTUAL FUND
+
+900001;INF000X00001;-;Sample Liquid Fund;Direct Plan;Growth;1234.5678;01-Nov-2026
+
+Close Ended Schemes(Income)
+
+IL&FS Mutual Fund (IDF)
+
+900002;-;-;Sample Fixed Horizon Fund - Series 2;;;12.3456;07-Apr-2015
