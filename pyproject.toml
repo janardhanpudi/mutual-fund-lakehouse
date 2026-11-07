@@ -8,7 +8,6 @@ authors = [
 ]
 requires-python = "==3.12.14"
 dependencies = [
-    "beautifulsoup4>=4.15.0",
     "boto3>=1.43.123",
     "databricks-sdk>=0.117.0",
     "matplotlib>=3.11.2",
