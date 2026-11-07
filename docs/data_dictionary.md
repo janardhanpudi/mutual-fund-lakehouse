@@ -27,7 +27,7 @@ Raw files are kept unchanged in `data/raw/` (git-ignored). All cleanup happens i
 | Scheme Name | `scheme_name` | string | **Base** name; not unique (5,947 rows share name + plan + option) |
 | Plan | `plan` | string, nullable | Blank for 5,709 rows (91% of them stale) → `Not applicable` |
 | Option | `option` | string, nullable | Inconsistent labels: `Growth`, `Growth Option`, `GROWTH`, several IDCW forms |
-| Net Asset Value | `nav` | decimal | No text values seen; test `nav > 0` |
+| Net Asset Value | `nav` | decimal | No text values seen. **0 is legitimate** (241 rows on 1 Nov: written-off segregated portfolios) — kept with a warning, excluded from returns in silver; text, blank or negative stops the run |
 | Date | `nav_date` | date | Format `DD-Mon-YYYY`; **not** the download date |
 | (heading line) | `category_raw` | string | Carried down from `Open/Close Ended/Interval Fund Schemes(...)` lines |
 | (heading line) | `amc` | string | Carried down from fund-house lines |
@@ -36,6 +36,9 @@ Raw files are kept unchanged in `data/raw/` (git-ignored). All cleanup happens i
 - Header row has 8 columns (newer layout; older tutorials show 6). Map columns **by header name**, never by position.
 - Blank lines contain one space; test with `strip()`.
 - Fund-house headings vary (`ASK MUTUAL FUND`, `IL&FS Mutual Fund (IDF)`): match case-insensitively, allow suffixes.
+- **A new category heading does not always repeat the fund house:** 17 Franklin rows (line 965 of the 1 Nov file) follow a category heading directly. The fund house carries over from the previous block.
+- The file uses Windows line endings (`\r\n`); `splitlines()` handles them.
+- 56 distinct fund-house headings on 1 Nov (more than the ~45–50 active houses; likely merged or closed houses with stale rows — check in silver).
 - Category headings mix curly and straight apostrophes and repeated spaces; normalize, never hard-code.
 - 104 raw categories using both old and new SEBI naming (`Debt Scheme - Liquid Fund` vs `Income/Debt Oriented Schemes - Liquid Fund`) → mapped by a dbt seed.
 - **Stale rows:** 8,802 rows 0–3 days old, 21 at 4–30 days, 230 at 31–365 days, 5,388 over 1 year. Active = latest NAV within 30 days of the file's newest date (8,823 variants). Bronze keeps all rows.
@@ -64,7 +67,7 @@ Same fields as the daily file, but a different layout:
 - **Revised NAVs:** AMFI data for a past date can change after publication.
 
 **Rules**
-- Used for **backfill and gap-filling**, max 90 days per request; request every scheme type, not only `tp=1`.
+- Used for **backfill and gap-filling**, max 90 days per request; request every scheme type: `tp=1` open-ended (8,637 rows on 30-Oct), `tp=2` close-ended (160), `tp=3` interval (4). The meaning of `tp` lives on AMFI's server and was found by testing.
 - Every daily run also re-fetches a **trailing window** (e.g. last 7 days) from history and merges on `(scheme_code, nav_date)` with **latest value wins**, so late and revised NAVs are picked up. Keep `ingested_at` so revisions can be traced.
 - Supplies only `scheme_code`, `nav_date`, `nav` to facts. Scheme attributes come **only** from the daily file, so SCD2 never records fake changes from switching sources.
 - About 300 MB of raw text per year: store compressed, convert to Parquet.
@@ -155,6 +158,20 @@ Same fields as the daily file, but a different layout:
 - dbt test: any active scheme with no TER and not on the allow-list fails.
 
 ---
+
+## Landing layout (NAV extractor, Day 3)
+
+`python -m mf_lakehouse.extract.nav` (daily) or `--start YYYY-MM-DD --end YYYY-MM-DD` (backfill) writes:
+
+```
+data/landing/nav/source=daily/run_date=<date>/nav.parquet
+data/landing/nav/source=history/run_date=<date>/nav.parquet        (last 7 days)
+data/landing/nav/backfill=<start>_<end>/source=history/run_date=<date>/nav.parquet
+```
+
+- Folders are named by **run date** (when fetched); each row keeps its own `nav_date`. Naming folders by NAV date would rewrite hundreds of old folders daily because of stale rows.
+- Added columns: `source` (`daily`/`history`), `run_date`, `ingested_at` (UTC).
+- Rerunning the same day overwrites the same file (idempotent). Silver resolves daily vs history and revisions by `(scheme_code, nav_date)`, latest `ingested_at` wins.
 
 ## Cross-source decisions
 
