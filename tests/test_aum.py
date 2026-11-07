@@ -90,3 +90,20 @@ def test_renamed_header_column_raises():
 def test_missing_month_raises():
     with pytest.raises(AumParseError, match="Report month"):
         parse_aum_rows(report(title=["", "Monthly Report"]))
+
+
+def test_url_follows_amfi_pattern():
+    from datetime import date
+
+    from mf_lakehouse.extract.aum import aum_url
+
+    assert aum_url(date(2026, 9, 1)) == "https://portal.amfiindia.com/spages/amsep2026repo.xls"
+
+
+def test_previous_month_crosses_year():
+    from datetime import date
+
+    from mf_lakehouse.extract.aum import previous_month
+
+    assert previous_month(date(2027, 1, 15)) == date(2026, 12, 1)
+    assert previous_month(date(2026, 11, 7)) == date(2026, 10, 1)

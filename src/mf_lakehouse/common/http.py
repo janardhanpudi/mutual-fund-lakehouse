@@ -22,8 +22,9 @@ def get(url, params=None, timeout=120, retries=3, backoff=5):
             resp.raise_for_status()
             return resp
         except requests.RequestException as err:
-            if attempt == retries:
-                raise
+            status = err.response.status_code if err.response is not None else None
+            if attempt == retries or (status is not None and status < 500):
+                raise  # 4xx (e.g. 404 not found) will not fix itself, so don't retry
             wait = backoff * attempt
             logger.warning("GET %s failed (%s); retry %d/%d in %ds", url, err, attempt, retries, wait)
             time.sleep(wait)

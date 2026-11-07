@@ -17,12 +17,16 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pandas as pd
+import requests
 
 from mf_lakehouse.common.config import PROJECT_ROOT
+from mf_lakehouse.common.http import get
 
 logger = logging.getLogger(__name__)
 
 SHEET = "MCR_MonthlyReport"
+AUM_URL = "https://portal.amfiindia.com/spages/am{mon}{year}repo.xls"  # e.g. amsep2026repo.xls
+XLS_SIGNATURE = bytes.fromhex("d0cf11e0a1b11ae1")  # first bytes of every legacy .xls file
 DEFAULT_OUT = PROJECT_ROOT / "data" / "landing" / "aum"
 
 # Header text starts with ... -> column name (checked in this order)
@@ -142,12 +146,35 @@ def _check_totals(df: pd.DataFrame, totals: dict[str, dict]) -> None:
             raise AumParseError(f"{label}: categories do not add up, worst column {diff.idxmax()} off by {diff.max():,.2f}")
 
 
-def read_aum_xls(path: Path) -> pd.DataFrame:
-    """Read the legacy .xls report and parse its MCR sheet."""
+def aum_url(month: date) -> str:
+    return AUM_URL.format(mon=month.strftime("%b").lower(), year=month.year)
+
+
+def fetch_aum_xls(month: date) -> bytes | None:
+    """Download one month's report, or None if AMFI has not published it yet (404)."""
+    try:
+        content = get(aum_url(month)).content
+    except requests.HTTPError as err:
+        if err.response is not None and err.response.status_code == 404:
+            return None
+        raise
+    if not content.startswith(XLS_SIGNATURE):
+        raise AumParseError(f"Expected a legacy .xls file from {aum_url(month)}, got: {content[:80]!r}")
+    return content
+
+
+def read_aum_xls(source: Path | bytes) -> pd.DataFrame:
+    """Read the legacy .xls report (a file path or downloaded bytes) and parse its MCR sheet."""
     import xlrd
 
-    sheet = xlrd.open_workbook(path).sheet_by_name(SHEET)
+    book = xlrd.open_workbook(file_contents=source) if isinstance(source, bytes) else xlrd.open_workbook(source)
+    sheet = book.sheet_by_name(SHEET)
     return parse_aum_rows([sheet.row_values(r) for r in range(sheet.nrows)])
+
+
+def previous_month(day: date) -> date:
+    first = day.replace(day=1)
+    return date(first.year - 1, 12, 1) if first.month == 1 else date(first.year, first.month - 1, 1)
 
 
 def write_parquet(df: pd.DataFrame, out_dir: Path, run_date: date) -> Path:
@@ -162,14 +189,27 @@ def write_parquet(df: pd.DataFrame, out_dir: Path, run_date: date) -> Path:
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Parse an AMFI monthly AUM .xls report to local Parquet.")
-    parser.add_argument("--file", type=Path, required=True, help="path to the downloaded .xls report")
+    parser = argparse.ArgumentParser(description="Download and parse an AMFI monthly AUM report to local Parquet.")
+    source = parser.add_mutually_exclusive_group()
+    source.add_argument("--month", help="report month YYYY-MM (default: last month)")
+    source.add_argument("--file", type=Path, help="parse an already downloaded .xls instead")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-    df = read_aum_xls(args.file)
-    path = write_parquet(df, args.out, date.today())
+    run_date = date.today()
+
+    if args.file:
+        df = read_aum_xls(args.file)
+    else:
+        month = datetime.strptime(args.month, "%Y-%m").date() if args.month else previous_month(run_date)
+        content = fetch_aum_xls(month)
+        if content is None:
+            logger.info("AUM report for %s is not published yet (%s); nothing to do", f"{month:%Y-%m}", aum_url(month))
+            return
+        df = read_aum_xls(content)
+
+    path = write_parquet(df, args.out, run_date)
     logger.info("wrote %s (%d categories, totals checked)", path, len(df))
 
 
