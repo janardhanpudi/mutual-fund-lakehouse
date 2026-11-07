@@ -10,7 +10,7 @@ Raw files are kept unchanged in `data/raw/` (git-ignored). All cleanup happens i
 | AMFI daily NAV | `GET https://www.amfiindia.com/spages/NAVAll.txt` | `;`-separated text with heading lines | Daily | One row per scheme variant (latest NAV only) | `scheme_code` (within one file); `(scheme_code, nav_date)` across days |
 | AMFI NAV history | `GET https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?tp=&frmdt=&todt=` | `;`-separated text with heading lines | On demand, max 90 days per request | One row per scheme variant per date | `(scheme_code, nav_date)` |
 | Benchmarks | `yfinance` (`^NSEI` Nifty 50, `^BSESN` Sensex) | DataFrame | Daily (trading days) | One row per index per trading date | `(ticker, date)` |
-| AMFI monthly AUM | AMFI Monthly page, Excel per month (e.g. `amsep2026repo.xls`) | Legacy `.xls` (CDF V2, code page 1252) | Monthly | One row per fund category | `(scheme_type, scheme_class, category, report_month)` |
+| AMFI monthly AUM | `GET https://portal.amfiindia.com/spages/am<mon><year>repo.xls` (e.g. `amsep2026repo.xls`) | Legacy `.xls` (CDF V2, code page 1252) | Monthly | One row per fund category | `(scheme_type, scheme_class, category, report_month)` |
 | AMFI TER | `GET https://www.amfiindia.com/api/populate-te-rdata-revised?MF_ID=All&Month=MM-YYYY&strCat=-1&strType=-1&excel=true` | `.xlsx` | Monthly file with daily rows | One row per base scheme per date (Regular and Direct side by side) | `(nsdl_scheme_code, ter_date)` |
 
 ---
@@ -119,6 +119,8 @@ Same fields as the daily file, but a different layout:
 - Any text in a numeric cell of a kept row stops the run (`# 158` appeared in the dropped FoF row).
 - The `Fund of Funds Scheme (Domestic)` row is excluded: AMFI's footnote says it is already counted in the underlying schemes.
 - Category-level data: joins to schemes through the category seed, not `scheme_code`.
+- **URL pattern** `am<3-letter month, lowercase><year>repo.xls` confirmed for Sep 2025, Mar, Jul, Aug, Sep 2026 — no page scraping needed. A month's report appears around the 10th of the next month (Sep 2026 on 12 Oct); before that the URL returns 404, which the extractor treats as "not published yet", not an error.
+- The download must start with the legacy `.xls` signature `D0 CF 11 E0 A1 B1 1A E1`, or the run stops.
 
 **Validation:** 61 leaf rows (56 open-ended, 4 close-ended, 1 interval), 0 duplicate keys, 0 NaN cells; leaf sums equal Grand Total and Totals A, B, C exactly.
 
@@ -148,7 +150,9 @@ Same fields as the daily file, but a different layout:
 - Not every scheme has every day (1,892 have all 31; 201 have exactly 20, on differing dates; cause unknown). Store as valid-from / valid-to periods, carrying the last value forward.
 - Components sum to the total for every row, both plans (0 mismatches) → dbt test.
 - **Late rows:** the October total grew from 64,542 (1 Nov) to 64,544 (4 Nov). The monthly job re-fetches the previous month and merges on `(nsdl_scheme_code, ter_date)`.
-- **Implausible values:** latest-value maximums are 45.44% (Direct) and 16.38% (Regular), far above SEBI's TER limits. dbt test: flag total TER outside a plausible range (e.g. 0–3%) for review.
+- **Totals above 3% are real, not typos:** 80 schemes in Oct 2026 (2,286 rows), mostly new index funds, ETFs and thematic funds. Their base expense ratio is normal (0.35–2.10%); the excess is in statutory levies and brokerage, which the disclaimer says are *annualized cumulative daily averages* — a short reference period after heavy initial trading inflates them (e.g. Axis Nifty500 Low Volatility 50 Index Fund: BER 0.90%, levies 12.40%, total 16.38%).
+- **Check the BER, not the total:** BER is the SEBI-capped part. 0 rows above 2.5% in Oct 2026. The extractor warns on BER > 2.5%; dbt tests the same.
+- **Direct TER of 0 on ETFs means "no Direct plan"**, not free (e.g. Motilal Oswal Nifty Oil & Gas ETF). Silver treats it as missing.
 - The disclaimer contains a template error (`GST rate is XX%`): official files are not perfect.
 
 **Join to NAV schemes**
@@ -173,6 +177,16 @@ data/landing/nav/backfill=<start>_<end>/source=history/run_date=<date>/nav.parqu
 - Added columns: `source` (`daily`/`history`), `run_date`, `ingested_at` (UTC).
 - Rerunning the same day overwrites the same file (idempotent). Silver resolves daily vs history and revisions by `(scheme_code, nav_date)`, latest `ingested_at` wins.
 
+## Other extractors (Days 4–5)
+
+| Command | Writes | Default |
+|---|---|---|
+| `python -m mf_lakehouse.extract.index_prices` | `data/landing/index_prices/run_date=<date>/index_prices.parquet` | last 7 days; `--start/--end` |
+| `python -m mf_lakehouse.extract.aum` | `data/landing/aum/report_month=<YYYY-MM>/aum.parquet` | last month; `--month YYYY-MM` or `--file` |
+| `python -m mf_lakehouse.extract.ter` | `data/landing/ter/ter_month=<YYYY-MM>/ter.parquet` | current and previous month; `--month YYYY-MM` |
+
+All overwrite their own partition on rerun (idempotent). The shared HTTP helper retries timeouts and 5xx errors with backoff, but not 4xx.
+
 ## Cross-source decisions
 
 | Decision | Reason |
@@ -183,3 +197,4 @@ data/landing/nav/backfill=<start>_<end>/source=history/run_date=<date>/nav.parqu
 | Bronze keeps raw values | Cleanup belongs in silver |
 | Parsers fail loudly | Unknown columns, wrong field counts, text in numeric cells, page-size changes stop the run |
 | No fund manager field | No central source; dropped from scope (agreed 1 Nov 2026) |
+| No web scraping | TER comes from AMFI's API (`excel=true`) and AUM URLs follow a fixed pattern; BeautifulSoup was planned for link discovery but is not needed |
