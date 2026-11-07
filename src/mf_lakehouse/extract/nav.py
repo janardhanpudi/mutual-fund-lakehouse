@@ -16,6 +16,8 @@ import logging
 import re
 
 import pandas as pd
+from datetime import date, timedelta
+from mf_lakehouse.common.http import get
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +50,9 @@ OUTPUT_COLUMNS = DATA_COLUMNS + ["category_raw", "amc"]
 CATEGORY_RE = re.compile(r"^(Open Ended|Close Ended|Interval Fund)\s+Schemes", re.IGNORECASE)
 NAV_DATE_FORMAT = "%d-%b-%Y"
 
+DAILY_URL = "https://www.amfiindia.com/spages/NAVAll.txt"
+HISTORY_URL = "https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx"
+MAX_HISTORY_DAYS = 90  # AMFI's limit per history request
 
 class NavParseError(ValueError):
     """The NAV text does not match the layout this parser expects."""
@@ -145,3 +150,50 @@ def _validate(df: pd.DataFrame) -> None:
             f"{no_amc.sum()} rows appear before any fund-house heading, e.g. "
             f"{_examples(df, no_amc, ['scheme_code', 'scheme_name'])}"
         )
+
+def fetch_daily_text() -> str:
+    """Download today's NAVAll.txt."""
+    return get(DAILY_URL).content.decode("utf-8", errors="replace")
+
+
+def history_chunks(start: date, end: date, max_days: int = MAX_HISTORY_DAYS):
+    """Split start..end into pieces of at most max_days (both ends included)."""
+    if start > end:
+        raise ValueError(f"start {start} is after end {end}")
+    chunk_start = start
+    while chunk_start <= end:
+        chunk_end = min(chunk_start + timedelta(days=max_days - 1), end)
+        yield chunk_start, chunk_end
+        chunk_start = chunk_end + timedelta(days=1)
+
+
+def fetch_history_text(start: date, end: date, tp: str = "1") -> str:
+    """Download NAV history for one range of at most 90 days."""
+    resp = get(
+        HISTORY_URL,
+        params={
+            "tp": tp,
+            "frmdt": start.strftime(NAV_DATE_FORMAT),
+            "todt": end.strftime(NAV_DATE_FORMAT),
+        },
+        timeout=300,
+    )
+    return resp.content.decode("utf-8", errors="replace")
+
+
+HISTORY_TYPES = ("1", "2", "3")  # open-ended, close-ended, interval
+
+
+def fetch_history(start: date, end: date) -> pd.DataFrame:
+    """NAV history for any date range: every 90-day chunk, every scheme type."""
+    parts = []
+    for chunk_start, chunk_end in history_chunks(start, end):
+        for tp in HISTORY_TYPES:
+            text = fetch_history_text(chunk_start, chunk_end, tp)
+            parts.append(parse_nav_text(text))
+            logger.info("history %s..%s tp=%s: %d rows", chunk_start, chunk_end, tp, len(parts[-1]))
+        df = pd.concat(parts, ignore_index=True)
+    dup = df.duplicated(["scheme_code", "nav_date"], keep=False)
+    if dup.any():
+        raise NavParseError(f"{dup.sum()} duplicate (scheme_code, nav_date) rows across chunks or scheme types")
+    return df
