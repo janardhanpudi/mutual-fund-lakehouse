@@ -6,7 +6,7 @@ from pyspark.sql import functions as F
 CATALOG = "mf_lakehouse"
 LANDING = f"/Volumes/{CATALOG}/bronze/raw_landing"
 STATE = f"/Volumes/{CATALOG}/bronze/autoloader_state"
-SOURCES = ["nav", "index_prices", "aum", "ter"]
+SOURCES = ["nav", "index_prices", "aum", "ter", "scheme_master_cdc"]
 
 
 def ingest(source: str) -> int:
