@@ -187,6 +187,23 @@ data/landing/nav/backfill=<start>_<end>/source=history/run_date=<date>/nav.parqu
 
 All overwrite their own partition on rerun (idempotent). The shared HTTP helper retries timeouts and 5xx errors with backoff, but not 4xx.
 
+## Neon scheme master and CDC (Days 6 and 8)
+
+- `scheme_master` (Neon `mf_source`): one row per `scheme_code` with the daily file's attributes; a trigger sets `updated_at` on every UPDATE.
+- The loader upserts with `WHERE (current) IS DISTINCT FROM (incoming)`, so unchanged rows are not touched and `updated_at` marks real changes only (a value becoming NULL counts as a change).
+- CDC (`python -m mf_lakehouse.extract.neon_cdc`) reads rows after the last **(updated_at, scheme_code)** position; the watermark lives in S3 at `state/scheme_master_cdc.json`. Data is written before the watermark moves.
+- **A 5-minute overlap window was tested and rejected** (7 Nov 2026): the loader's bulk upsert gives all rows one `updated_at`, so the overlap re-read every row on every run. The composite watermark reads each row once.
+- Known limitation: a transaction committing after a CDC run with an older `updated_at` would be missed; only the loader writes `scheme_master`, in seconds, before CDC runs.
+- Output: `data/landing/scheme_master_cdc/run_date=<date>/changes_<UTC time>.parquet` — one file per run, never overwritten. Verified: rename and restore of scheme 135762 produced three versions in `bronze.scheme_master_cdc`.
+
+## Bronze (Day 7–8)
+
+- `databricks/bronze_ingest.py` (Job `bronze_ingest`): one Auto Loader stream per source → `mf_lakehouse.bronze.<source>`, `availableNow`, schema and checkpoint under `/Volumes/mf_lakehouse/bronze/autoloader_state/<source>/`.
+- `allowOverwrites = true`: extractors overwrite files (TER previous month, same-day reruns), so changed files are loaded again. **Bronze is append-only**; the same row can appear once per file version (TER rows doubled with `file_versions = 2` in testing). Silver keeps the latest by `ingested_at`.
+- Audit columns: `_source_file`, `_file_modified_at`, `_bronze_loaded_at`.
+- NAV backfill 1 Nov 2025 – 26 Oct 2026 in four 90-day runs: 2,153,999 rows, 14 MB as Parquet; bronze row counts per quarter match the local files exactly.
+- Close-ended history rows fall each quarter (25,756 → 10,430) as fixed-term schemes mature.
+
 ## Cross-source decisions
 
 | Decision | Reason |
