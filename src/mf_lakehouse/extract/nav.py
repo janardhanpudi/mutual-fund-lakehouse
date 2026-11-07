@@ -12,12 +12,18 @@ Anything unexpected raises NavParseError instead of writing bad data.
 
 from __future__ import annotations
 
+import argparse
 import logging
 import re
+from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
 
 import pandas as pd
-from datetime import date, timedelta
+
+from mf_lakehouse.common.config import PROJECT_ROOT
 from mf_lakehouse.common.http import get
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -197,3 +203,62 @@ def fetch_history(start: date, end: date) -> pd.DataFrame:
     if dup.any():
         raise NavParseError(f"{dup.sum()} duplicate (scheme_code, nav_date) rows across chunks or scheme types")
     return df
+
+# --- Step 3: save to Parquet, and the command line ----------------------------
+
+DEFAULT_OUT = PROJECT_ROOT / "data" / "landing" / "nav"
+LOOKBACK_DAYS = 7
+
+
+def write_parquet(df: pd.DataFrame, out_dir: Path, source: str, run_date: date) -> Path:
+    """Write one run's rows to out_dir/source=<source>/run_date=<date>/nav.parquet."""
+    out = df.copy()
+    out["source"] = source
+    out["run_date"] = run_date.isoformat()
+    out["ingested_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    folder = out_dir / f"source={source}" / f"run_date={run_date:%Y-%m-%d}"
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / "nav.parquet"
+    out.to_parquet(path, index=False)  # same run_date -> same file, overwritten
+    return path
+
+
+def run_daily(run_date: date, out_dir: Path) -> list[Path]:
+    """Today's daily file, plus the last LOOKBACK_DAYS of history (late and revised NAVs)."""
+    daily = parse_nav_text(fetch_daily_text())
+    history = fetch_history(run_date - timedelta(days=LOOKBACK_DAYS), run_date)
+    return [
+        write_parquet(daily, out_dir, "daily", run_date),
+        write_parquet(history, out_dir, "history", run_date),
+    ]
+
+
+def run_backfill(start: date, end: date, out_dir: Path, run_date: date) -> list[Path]:
+    """History for any past range, in 90-day chunks."""
+    history = fetch_history(start, end)
+    return [write_parquet(history, out_dir / f"backfill={start:%Y%m%d}_{end:%Y%m%d}", "history", run_date)]
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Extract AMFI NAV data to local Parquet files.")
+    parser.add_argument("--start", type=date.fromisoformat, help="backfill start date, YYYY-MM-DD")
+    parser.add_argument("--end", type=date.fromisoformat, help="backfill end date, YYYY-MM-DD")
+    parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="output folder")
+    args = parser.parse_args(argv)
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    run_date = date.today()
+
+    if args.start or args.end:
+        if not (args.start and args.end):
+            parser.error("--start and --end must be used together")
+        paths = run_backfill(args.start, args.end, args.out, run_date)
+    else:
+        paths = run_daily(run_date, args.out)
+
+    for path in paths:
+        logger.info("wrote %s (%d rows)", path, len(pd.read_parquet(path)))
+
+
+if __name__ == "__main__":
+    main()
