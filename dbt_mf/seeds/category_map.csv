@@ -1,0 +1,105 @@
+scheme_type,class_raw,category_raw_name,class_std,category_std,mapping
+Open Ended Schemes,Hybrid Scheme,Aggressive Hybrid Fund,Hybrid Schemes,Aggressive Hybrid Fund,same
+Open Ended Schemes,Hybrid Schemes,Aggressive Hybrid Fund,Hybrid Schemes,Aggressive Hybrid Fund,same
+Open Ended Schemes,Hybrid Scheme,Arbitrage Fund,Hybrid Schemes,Arbitrage Fund,same
+Open Ended Schemes,Hybrid Schemes,Arbitrage Fund,Hybrid Schemes,Arbitrage Fund,same
+Open Ended Schemes,Hybrid Schemes,Balanced Advantage Fund/ Dynamic Asset Allocation,Hybrid Schemes,Balanced Advantage Fund/ Dynamic Asset Allocation,same
+Open Ended Schemes,Hybrid Scheme,Dynamic Asset Allocation or Balanced Advantage,Hybrid Schemes,Balanced Advantage Fund/ Dynamic Asset Allocation,renamed
+Open Ended Schemes,Hybrid Scheme,Balanced Hybrid Fund,Hybrid Schemes,Balanced Hybrid Fund,same
+Open Ended Schemes,Hybrid Schemes,Balanced Hybrid Fund,Hybrid Schemes,Balanced Hybrid Fund,same
+Open Ended Schemes,Hybrid Scheme,Conservative Hybrid Fund,Hybrid Schemes,Conservative Hybrid Fund,same
+Open Ended Schemes,Hybrid Schemes,Conservative Hybrid Fund,Hybrid Schemes,Conservative Hybrid Fund,same
+Open Ended Schemes,Hybrid Scheme,Equity Savings,Hybrid Schemes,Equity Savings Fund,renamed
+Open Ended Schemes,Hybrid Schemes,Equity Savings Fund,Hybrid Schemes,Equity Savings Fund,same
+Open Ended Schemes,Hybrid Scheme,Multi Asset Allocation,Hybrid Schemes,Multi Asset Allocation Fund,renamed
+Open Ended Schemes,Hybrid Schemes,Multi Asset Allocation Fund,Hybrid Schemes,Multi Asset Allocation Fund,same
+Open Ended Schemes,Equity Scheme,Contra Fund,Equity Schemes,Contra Fund,same
+Open Ended Schemes,Equity Schemes,Contra Fund,Equity Schemes,Contra Fund,same
+Open Ended Schemes,Equity Scheme,Dividend Yield Fund,Equity Schemes,Dividend Yield Fund,same
+Open Ended Schemes,Equity Schemes,Dividend Yield Fund,Equity Schemes,Dividend Yield Fund,same
+Open Ended Schemes,Equity Scheme,ELSS,Equity Schemes,ELSS- Tax Saver Fund,renamed
+Open Ended Schemes,Equity Schemes,ELSS- Tax Saver Fund,Equity Schemes,ELSS- Tax Saver Fund,same
+Open Ended Schemes,Equity Scheme,Flexi Cap Fund,Equity Schemes,Flexi Cap Fund,same
+Open Ended Schemes,Equity Schemes,Flexi Cap Fund,Equity Schemes,Flexi Cap Fund,same
+Open Ended Schemes,Equity Scheme,Focused Fund,Equity Schemes,Focused Fund,same
+Open Ended Schemes,Equity Schemes,Focused Fund,Equity Schemes,Focused Fund,same
+Open Ended Schemes,Equity Scheme,Large & Mid Cap Fund,Equity Schemes,Large & Mid Cap Fund,same
+Open Ended Schemes,Equity Schemes,Large & Mid Cap Fund,Equity Schemes,Large & Mid Cap Fund,same
+Open Ended Schemes,Equity Scheme,Large Cap Fund,Equity Schemes,Large Cap Fund,same
+Open Ended Schemes,Equity Schemes,Large Cap Fund,Equity Schemes,Large Cap Fund,same
+Open Ended Schemes,Equity Scheme,Mid Cap Fund,Equity Schemes,Mid Cap Fund,same
+Open Ended Schemes,Equity Schemes,Mid Cap Fund,Equity Schemes,Mid Cap Fund,same
+Open Ended Schemes,Equity Scheme,Multi Cap Fund,Equity Schemes,Multi Cap Fund,same
+Open Ended Schemes,Equity Schemes,Multi Cap Fund,Equity Schemes,Multi Cap Fund,same
+Open Ended Schemes,Equity Scheme,Small Cap Fund,Equity Schemes,Small Cap Fund,same
+Open Ended Schemes,Equity Schemes,Small Cap Fund,Equity Schemes,Small Cap Fund,same
+Open Ended Schemes,Equity Scheme,Value Fund,Equity Schemes,Value Fund,same
+Open Ended Schemes,Equity Schemes,Value Fund,Equity Schemes,Value Fund,same
+Open Ended Schemes,Equity Schemes,Sectoral Fund,Equity Schemes,Sectoral Fund,same
+Open Ended Schemes,Equity Schemes,Thematic Fund,Equity Schemes,Thematic Fund,same
+Open Ended Schemes,Equity Scheme,Sectoral/ Thematic,Equity Schemes,Sectoral/ Thematic (old name),unmapped
+Open Ended Schemes,Debt Scheme,Banking and PSU Fund,Debt Schemes,Banking and PSU Debt Fund,renamed
+Open Ended Schemes,Income/Debt Oriented Schemes,Banking and PSU Debt Fund,Debt Schemes,Banking and PSU Debt Fund,same
+Open Ended Schemes,Debt Scheme,Corporate Bond Fund,Debt Schemes,Corporate Bond Fund,same
+Open Ended Schemes,Income/Debt Oriented Schemes,Corporate Bond Fund,Debt Schemes,Corporate Bond Fund,same
+Open Ended Schemes,Debt Scheme,Credit Risk Fund,Debt Schemes,Credit Risk Fund,same
+Open Ended Schemes,Income/Debt Oriented Schemes,Credit Risk Fund,Debt Schemes,Credit Risk Fund,same
+Open Ended Schemes,Debt Scheme,Gilt Fund,Debt Schemes,Gilt Fund,same
+Open Ended Schemes,Income/Debt Oriented Schemes,Gilt Fund,Debt Schemes,Gilt Fund,same
+Open Ended Schemes,Income/Debt Oriented Schemes,10-year Constant Maturity Gilt Fund,Debt Schemes,10-year Constant Maturity Gilt Fund,same
+Open Ended Schemes,Debt Scheme,Liquid Fund,Debt Schemes,Liquid Fund,same
+Open Ended Schemes,Income/Debt Oriented Schemes,Liquid Fund,Debt Schemes,Liquid Fund,same
+Open Ended Schemes,Debt Scheme,Money Market Fund,Debt Schemes,Money Market Fund,same
+Open Ended Schemes,Income/Debt Oriented Schemes,Money Market Fund,Debt Schemes,Money Market Fund,same
+Open Ended Schemes,Debt Scheme,Overnight Fund,Debt Schemes,Overnight Fund,same
+Open Ended Schemes,Income/Debt Oriented Schemes,Overnight Fund,Debt Schemes,Overnight Fund,same
+Open Ended Schemes,Income/Debt Oriented Schemes,Floating Interest Rates Fund,Debt Schemes,Floating Interest Rates Fund,same
+Open Ended Schemes,Income/Debt Oriented Schemes,Sectoral Fund,Debt Schemes,Sectoral Fund,same
+Open Ended Schemes,Income/Debt Oriented Schemes,Dynamic Term Fund,Debt Schemes,Dynamic Term Fund,same
+Open Ended Schemes,Debt Scheme,Dynamic Bond,Debt Schemes,Dynamic Term Fund,likely
+Open Ended Schemes,Income/Debt Oriented Schemes,Long Term Fund,Debt Schemes,Long Term Fund,same
+Open Ended Schemes,Debt Scheme,Long Duration Fund,Debt Schemes,Long Term Fund,likely
+Open Ended Schemes,Income/Debt Oriented Schemes,Medium to Long Term Fund,Debt Schemes,Medium to Long Term Fund,same
+Open Ended Schemes,Debt Scheme,Medium to Long Duration Fund,Debt Schemes,Medium to Long Term Fund,likely
+Open Ended Schemes,Income/Debt Oriented Schemes,Medium Term Fund,Debt Schemes,Medium Term Fund,same
+Open Ended Schemes,Debt Scheme,Medium Duration Fund,Debt Schemes,Medium Term Fund,likely
+Open Ended Schemes,Income/Debt Oriented Schemes,Short Term Fund,Debt Schemes,Short Term Fund,same
+Open Ended Schemes,Debt Scheme,Short Duration Fund,Debt Schemes,Short Term Fund,likely
+Open Ended Schemes,Income/Debt Oriented Schemes,Ultra Short Term Fund,Debt Schemes,Ultra Short Term Fund,same
+Open Ended Schemes,Debt Scheme,Ultra Short Duration Fund,Debt Schemes,Ultra Short Term Fund,likely
+Open Ended Schemes,Income/Debt Oriented Schemes,Ultra Short to Short Term Fund,Debt Schemes,Ultra Short to Short Term Fund,same
+Open Ended Schemes,Debt Scheme,Low Duration Fund,Debt Schemes,Low Duration Fund (old name),unmapped
+Open Ended Schemes,Solution Oriented Scheme,Retirement Fund,Solution Oriented Schemes,Retirement Fund,same
+Open Ended Schemes,Solution Oriented Schemes,Retirement Fund,Solution Oriented Schemes,Retirement Fund,same
+Open Ended Schemes,Solution Oriented Scheme,Children’s Fund,Solution Oriented Schemes,Childrens' Fund,renamed
+Open Ended Schemes,Children’s Fund,Childrens' Fund,Solution Oriented Schemes,Childrens' Fund,same
+Open Ended Schemes,Life Cycle Funds,Life Cycle Fund with Maturity of 5 Years,Life Cycle Funds,Life Cycle Fund with Maturity of 5 Years,same
+Open Ended Schemes,Life Cycle Funds,Life Cycle Fund with Maturity of 10 Years,Life Cycle Funds,Life Cycle Fund with Maturity of 10 Years,same
+Open Ended Schemes,Life Cycle Funds,Life Cycle Fund with Maturity of 15 Years,Life Cycle Funds,Life Cycle Fund with Maturity of 15 Years,same
+Open Ended Schemes,Life Cycle Funds,Life Cycle Fund with Maturity of 30 Years,Life Cycle Funds,Life Cycle Fund with Maturity of 30 Years,same
+Open Ended Schemes,Index Funds,Equity Funds,Index Funds,Equity Funds,same
+Open Ended Schemes,Index Funds,Debt Funds,Index Funds,Debt Funds,same
+Open Ended Schemes,Index Funds,Hybrid Fund,Index Funds,Hybrid Fund,same
+Open Ended Schemes,Other Scheme,Index Funds,Index Funds,Index Funds (type not stated),unmapped
+Open Ended Schemes,Exchange Traded Funds (ETFs),Equity ETF,Exchange Traded Funds (ETFs),Equity ETF,same
+Open Ended Schemes,Exchange Traded Funds (ETFs),Debt ETF,Exchange Traded Funds (ETFs),Debt ETF,same
+Open Ended Schemes,Exchange Traded Funds (ETFs),Hybrid ETF,Exchange Traded Funds (ETFs),Hybrid ETF,same
+Open Ended Schemes,Exchange Traded Funds (ETFs),Gold ETF,Exchange Traded Funds (ETFs),Gold ETF,same
+Open Ended Schemes,Other Scheme,Gold ETF,Exchange Traded Funds (ETFs),Gold ETF,same
+Open Ended Schemes,Exchange Traded Funds (ETFs),Silver ETF,Exchange Traded Funds (ETFs),Silver ETF,same
+Open Ended Schemes,Exchange Traded Funds (ETFs),Other ETF,Exchange Traded Funds (ETFs),Other ETF,same
+Open Ended Schemes,Exchange Traded Funds (ETFs),ETFs investing overseas,Exchange Traded Funds (ETFs),ETFs investing overseas,same
+Open Ended Schemes,Other Scheme,Other ETFs,Exchange Traded Funds (ETFs),ETF (type not stated),unmapped
+Open Ended Schemes,Other Scheme,FoF Domestic,Fund of Funds (Domestic),Fund of Funds Scheme (Domestic),renamed
+Open Ended Schemes,Fund of Funds Scheme (Domestic),Fund of Funds Scheme (Domestic),Fund of Funds (Domestic),Fund of Funds Scheme (Domestic),same
+Open Ended Schemes,Other Scheme,FoF Overseas,Overseas Fund of Funds,Fund of Funds investing overseas,renamed
+Open Ended Schemes,Overseas Fund of Funds,Fund of Funds investing overseas,Overseas Fund of Funds,Fund of Funds investing overseas,same
+Close Ended Schemes,Income/Debt Oriented Schemes,Fixed Term Plan,Income/Debt Oriented Schemes,Fixed Term Plan,same
+Close Ended Schemes,Income/Debt Oriented Schemes,Other Debt Scheme,Income/Debt Oriented Schemes,Other Debt Scheme,same
+Close Ended Schemes,(none),Income,Income/Debt Oriented Schemes,Close Ended Income (legacy),legacy
+Close Ended Schemes,(none),Growth,Growth/Equity Oriented Schemes,Close Ended Growth (legacy),legacy
+Close Ended Schemes,(none),ELSS,Growth/Equity Oriented Schemes,ELSS,same
+Open Ended Schemes,(none),Income,Debt Schemes,Open Ended Income (legacy),legacy
+Open Ended Schemes,(none),Gilt,Debt Schemes,Open Ended Gilt (legacy),legacy
+Open Ended Schemes,(none),Growth,Equity Schemes,Open Ended Growth (legacy),legacy
+Interval Fund Schemes,(none),Income,(none),Income/Debt Oriented Schemes,same

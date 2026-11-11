@@ -43,3 +43,7 @@ models:
     marts:
       +schema: gold
       +materialized: table
+      
+seeds:
+  mf_lakehouse:
+    +schema: silver
