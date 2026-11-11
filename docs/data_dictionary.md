@@ -204,6 +204,60 @@ All overwrite their own partition on rerun (idempotent). The shared HTTP helper 
 - NAV backfill 1 Nov 2025 – 26 Oct 2026 in four 90-day runs: 2,153,999 rows, 14 MB as Parquet; bronze row counts per quarter match the local files exactly.
 - Close-ended history rows fall each quarter (25,756 → 10,430) as fixed-term schemes mature.
 
+## Silver (dbt, Days 9–10)
+
+Layers: staging (`dbt_dev_silver`, views, one per source, casts and light cleanup only) → intermediate (`dbt_dev_silver`, tables or incremental, business rules) → marts (`dbt_dev_gold`, tables).
+
+| Model | Type | Rows | Rule |
+|---|---|---|---|
+| `stg_nav` | view | all bronze NAV rows | `''` and `-` → NULL, dates parsed, option text kept raw |
+| `stg_ter`, `stg_aum`, `stg_index_prices`, `stg_scheme_master_cdc` | view | — | cast and rename only |
+| `int_nav_clean` | incremental merge | 2,206,121 | one row per (scheme_code, nav_date); latest `ingested_at` wins; only affected pairs are re-decided |
+| `int_ter_daily` | table | 139,390 | latest TER per (scheme, date), Regular and Direct unpivoted; plans with all five components 0 dropped |
+| `int_index_daily` | table | 544 | one close per (ticker, price_date) |
+| `int_aum_monthly` | table | 61 | one row per (report_month, scheme_type, scheme_class, category) |
+| `int_trading_calendar` | table | 272 days, 13 month-ends | trading days from the index data; a month-end is the last trading day of a finished month |
+
+Rules that changed the numbers:
+- **Future-dated NAVs.** Liquid and overnight funds publish weekend and future-dated NAVs. Every return uses only NAVs on or before the latest trading day.
+- **Zero NAVs.** Segregated portfolios with NAV 0 are kept in bronze and marked `is_priced = false`; they never enter returns.
+- **Unit splits.** AMFI does not adjust NAVs for splits. A one-step move of more than 40% counts as a break: any return whose window contains a break is NULL, and `has_nav_break` says why. 37 active schemes are affected; this is flagged, not adjusted, because the true split ratio is not in the data.
+
+## Gold (dbt, Days 9–12)
+
+**`dim_scheme`** (SCD Type 2, built from the CDC change log, not `dbt snapshot`)
+- 14,443 versions for 14,441 current schemes.
+- `valid_from` is `1900-01-01` for a scheme's first version, otherwise its `updated_at`. `valid_to` is the next version's `updated_at` (`lead()`); NULL means current.
+- The category comes from the seed `category_map.csv` (104 rows) by (scheme type, class, category name). 0 unmatched.
+- `category_mapping` records how each name was matched: `same`, `renamed`, `likely`, `legacy`, or `unmapped`.
+- `option_type`: `Unknown` (AMFI gives no option), `Other` (bonus, redemption, and "unclaimed" rows, which are uncollected money, not funds), `IDCW` (dividend, payout, reinvest and their typos), `Growth` (growth or cumulative). Result: Growth 3,764, IDCW 4,799, Other 162, Unknown 5,716.
+- Known gap: 200 active non-ETF funds (mostly overnight and liquid) have no option and stay `Unknown`. Their names carry no option, and none was found.
+
+**`fct_scheme_returns`** (active schemes as of the latest trading day)
+- Point-to-point 1m, 3m, 6m and 1y returns. The start NAV is the latest NAV on or before the target date, at most 7 days older.
+- 8,719 active schemes; 7,863 with a 1-year return.
+- Returns are NULL across a unit-split break. IDCW options understate performance because payouts lower the NAV, so compare Growth options.
+
+**`fct_scheme_vs_benchmark`** (Day 12)
+- Adds Nifty 50 returns over the same dates and `excess_return_*_pct` = scheme − Nifty.
+- Nifty comes from Yahoo's price index, which ignores dividends. The fund returns include them, so excess returns are slightly flattered. The official benchmark is the Nifty 50 TRI, which is not free.
+- Equity Growth schemes with a 1-year return: 1,037; 858 (83%) beat Nifty by 5.69 points on average.
+
+**`fct_category_rankings`** (Day 12)
+- Growth options only, ranked by 1-year return within (category, plan). Direct and Regular are ranked separately.
+- `top_pct` = rank ÷ group size × 100; 25 or lower is top quartile.
+- Excludes funds with a split break and funds without a 1-year return.
+
+**`fct_scheme_risk`** (Day 12)
+- `volatility_1y_pct`: standard deviation of daily returns, annualised by observations per year (weekend NAVs count, so this is not trading-day scaling).
+- `max_drawdown_1y_pct`: the largest fall from a running peak within the year (negative).
+- Needs at least 100 daily returns. 8,682 schemes; 8,300 with risk. Median volatility 12.41%, median drawdown −10.98%, worst −55.66%.
+
+## Category names (watch for these)
+
+- Names with `(type not stated)` (index funds) and `(old name)` (sectoral funds) come from AMFI's pre-2024 naming. They are mapped by the seed, not by name, so new rows that use the old names still map correctly.
+- About 2,000 schemes sit under legacy or unmappable names. They are kept with `category_mapping` set, so reports can filter them out.
+
 ## Cross-source decisions
 
 | Decision | Reason |
