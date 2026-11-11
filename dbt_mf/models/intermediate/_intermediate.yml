@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: int_trading_calendar
+    description: One row per trading day, with the last trading day of each finished month flagged.
+    columns:
+      - name: trade_date
+        tests:
+          - unique
+          - not_null
+
+  - name: int_index_daily
+    description: One close per (ticker, price_date).
+    columns:
+      - name: price_date
+        tests:
+          - not_null

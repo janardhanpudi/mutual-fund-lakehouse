@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: dim_scheme
+    description: One row per scheme per version (SCD Type 2). is_current marks the live row.
+    columns:
+      - name: scheme_code
+        tests:
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+      - name: option_type
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Growth', 'IDCW', 'Other', 'Unknown']
+      - name: scheme_type
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['Open Ended', 'Close Ended', 'Interval']
+
+  - name: fct_scheme_returns
+    description: Point-to-point returns for each active scheme, as of its latest NAV.
+    columns:
+      - name: scheme_code
+        tests:
+          - unique
+          - not_null
+      - name: latest_nav_date
+        tests:
+          - not_null
+
+  - name: fct_scheme_vs_benchmark
+    description: Returns with Nifty 50 returns over the same dates and the excess return.
+    columns:
+      - name: scheme_code
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_category_rankings
+    description: Growth-option funds ranked by 1-year return within each (category, plan).
+    columns:
+      - name: scheme_code
+        tests:
+          - unique
+          - not_null
+      - name: category_rank
+        tests:
+          - not_null
+
+  - name: fct_scheme_risk
+    description: 1-year volatility and max drawdown for each active scheme.
+    columns:
+      - name: scheme_code
+        tests:
+          - unique
+          - not_null
