@@ -20,5 +20,7 @@ RUN python -m venv /opt/dbt-venv \
       "python-dotenv>=1.2.4" \
       "requests>=2.34.2" \
       "xlrd>=2.0.2" \
-      "yfinance>=1.7.0"
+      "yfinance>=1.7.0" \
+      "databricks-sql-connector>=4.4.0" \
+      "sqlalchemy>=2.0"
 USER airflow

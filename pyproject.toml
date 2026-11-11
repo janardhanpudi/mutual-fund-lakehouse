@@ -10,6 +10,7 @@ requires-python = "==3.12.14"
 dependencies = [
     "boto3>=1.43.123",
     "databricks-sdk>=0.117.0",
+    "databricks-sql-connector>=4.4.0",
     "matplotlib>=3.11.2",
     "numpy>=2.5.4",
     "openpyxl>=3.1.5",
@@ -19,6 +20,7 @@ dependencies = [
     "python-dotenv>=1.2.4",
     "requests>=2.34.2",
     "seaborn>=0.13.2",
+    "sqlalchemy>=2.1.8",
     "xlrd>=2.0.2",
     "yfinance>=1.7.0",
 ]

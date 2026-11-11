@@ -5,6 +5,7 @@
   3. start the bronze_ingest Databricks job, and wait until it finishes
   4. check that the bronze data is fresh
   5. dbt build (silver -> gold, with tests)
+  6. copy the gold tables to Neon (mf_serving) for the Streamlit app
 """
 
 import os
@@ -102,6 +103,9 @@ with DAG(
         task_id="dbt_build",
         bash_command=f"{DBT_BIN} build --target prod --project-dir {DBT_PROJECT} --profiles-dir {DBT_PROJECT}",
     )
+    publish = BashOperator(
+        task_id="publish_serving", bash_command=_module("mf_lakehouse.load.serving")
+    )
 
     extract_nav >> extract_index >> extract_ter >> upload_s3 >> upload_volume
-    upload_volume >> start >> wait >> freshness >> dbt_build
+    upload_volume >> start >> wait >> freshness >> dbt_build >> publish
