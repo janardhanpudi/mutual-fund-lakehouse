@@ -1,0 +1,49 @@
+name: CI
+
+# Runs on every push to main and on every pull request.
+# No secrets are needed: the tests use fakes, and dbt parse does not connect to Databricks.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run tests
+        run: uv run pytest -q
+
+  dbt-parse:
+    runs-on: ubuntu-latest
+    env:
+      # Placeholder values: dbt parse reads the profile but never connects.
+      DATABRICKS_HOST: example.cloud.databricks.com
+      DATABRICKS_HTTP_PATH: /sql/1.0/warehouses/placeholder
+      DATABRICKS_TOKEN: placeholder
+      DATABRICKS_CATALOG: mf_lakehouse
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dbt
+        run: pip install dbt-databricks==1.13.0
+
+      - name: Parse dbt project
+        run: |
+          dbt parse \
+            --project-dir dbt_mf \
+            --profiles-dir dbt_mf
