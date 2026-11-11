@@ -8,7 +8,7 @@ Steps:
 
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from airflow import DAG
@@ -66,8 +66,9 @@ with DAG(
     dag_id="mf_pipeline",
     description="Databricks bronze load, then dbt build",
     start_date=datetime(2026, 1, 1),
-    schedule=None,          # manual for now; a daily time is added after the first full run
+    schedule="10 15 * * *",  # 15:10 UTC = 20:40 IST every day (Airflow uses UTC)
     catchup=False,
+    default_args={"retries": 2, "retry_delay": timedelta(minutes=10)},
     tags=["mf-lakehouse"],
 ) as dag:
     start = PythonOperator(task_id="start_bronze_job", python_callable=start_bronze_job)
