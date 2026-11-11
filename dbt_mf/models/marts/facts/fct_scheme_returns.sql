@@ -109,6 +109,7 @@ select
     d.amc,
     d.plan,
     d.scheme_option,
+    d.option_type,
     d.scheme_type,
     d.scheme_class,
     d.category,

@@ -69,6 +69,14 @@ select
     k.scheme_name,
     k.plan,
     k.scheme_option,
+        -- AMFI has ~360 spellings of the option; this is the one clean version. First match wins.
+    case
+        when k.scheme_option is null then 'Unknown'
+        when lower(k.scheme_option) rlike 'unclaimed|3 y' then 'Other'    -- uncollected money ("... up to 3 years"), not a real fund
+        when lower(k.scheme_option) rlike 'dcw|idwc|dividend|income distribution|payout|reinvest' then 'IDCW'
+        when lower(k.scheme_option) rlike 'growth|cumulative' then 'Growth'
+        else 'Other'                                                     -- bonus, redemption, etc.
+    end                                              as option_type,
     k.isin_growth_or_payout,
     k.isin_reinvestment,
     k.amc,
