@@ -96,11 +96,11 @@ with DAG(
     wait = PythonOperator(task_id="wait_for_bronze_job", python_callable=wait_for_bronze_job)
     freshness = BashOperator(
         task_id="dbt_source_freshness",
-        bash_command=f"{DBT_BIN} source freshness --project-dir {DBT_PROJECT} --profiles-dir {DBT_PROJECT}",
+        bash_command=f"{DBT_BIN} source freshness --target prod --project-dir {DBT_PROJECT} --profiles-dir {DBT_PROJECT}",
     )
     dbt_build = BashOperator(
         task_id="dbt_build",
-        bash_command=f"{DBT_BIN} build --project-dir {DBT_PROJECT} --profiles-dir {DBT_PROJECT}",
+        bash_command=f"{DBT_BIN} build --target prod --project-dir {DBT_PROJECT} --profiles-dir {DBT_PROJECT}",
     )
 
     extract_nav >> extract_index >> extract_ter >> upload_s3 >> upload_volume
