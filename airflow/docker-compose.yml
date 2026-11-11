@@ -1,6 +1,6 @@
 # Local Airflow for the mf-lakehouse pipeline. Runs on your machine only.
 # Start:  docker compose -f airflow/docker-compose.yml up -d --build
-# UI:     http://localhost:8081   (user: admin, password: see ADMIN_PASSWORD below)
+# UI:     http://localhost:8081   (user: admin, password: ADMIN_PASSWORD from .env, default "admin")
 
 x-airflow-common: &airflow-common
   build: .
@@ -12,11 +12,13 @@ x-airflow-common: &airflow-common
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
-    DBT_LOG_PATH: /tmp/dbt-logs
+    DBT_LOG_PATH: /tmp/dbt-logs      # dbt writes here, not into the shared repo folder
     DBT_TARGET_PATH: /tmp/dbt-target
+    PYTHONPATH: /opt/airflow/src     # lets the extractors import mf_lakehouse
   volumes:
     - ./dags:/opt/airflow/dags
     - ../dbt_mf:/opt/airflow/dbt_mf  # the dbt project, shared with the host
+    - ../src:/opt/airflow/src        # the extract and upload code
   depends_on:
     postgres:
       condition: service_healthy
