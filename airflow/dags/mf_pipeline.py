@@ -66,7 +66,7 @@ with DAG(
     dag_id="mf_pipeline",
     description="Databricks bronze load, then dbt build",
     start_date=datetime(2026, 1, 1),
-    schedule="10 15 * * *",  # 15:10 UTC = 20:40 IST every day (Airflow uses UTC)
+    schedule="0 17 * * *",  # 17:00 UTC = 22:30 IST every day (Airflow uses UTC)
     catchup=False,
     default_args={"retries": 2, "retry_delay": timedelta(minutes=10)},
     tags=["mf-lakehouse"],
